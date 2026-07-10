@@ -11,5 +11,11 @@
     <h1>ScrabBook</h1>
     <button id="theme-toggle" class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">Toggle Theme</button>
 </div>
+ <main class="dashboard">
+ 
+    <form action="{{ url_for('save') }}" method="POST" class="url-form">
+      <input type="text" name="url" placeholder="Paste an article URL, e.g. https://example.com/some-post" required>
+      <button type="submit">Save Article</button>
+    </form>
 </body>
 </html>
