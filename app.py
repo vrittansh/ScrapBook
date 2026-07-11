@@ -3,144 +3,98 @@ import json
 import uuid
 from datetime import datetime
 
+from flask import Flask, render_template, request, redirect, url_for, flash
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask, render_template, request, redirect, url_for, flash
 
 app = Flask(__name__)
-app.secret_key = "dev-secret-key-change-this-later"  # required for flash messages
-
+app.secret_key = "dev-secret-key"  
 DATA_FILE = os.path.join("data", "articles.json")
-
-
-
 def load_articles():
-    """Read all saved articles from disk. Returns an empty list if none yet."""
+    """Read all saved articles from our JSON 'database' file."""
     if not os.path.exists(DATA_FILE):
         return []
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
-
-
 def save_articles(articles):
-    """Write the full articles list back to disk as JSON."""
-    os.makedirs("data", exist_ok=True)
+    """Write the full articles list back to disk."""
+    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(articles, f, indent=2, ensure_ascii=False)
-
-
-
 def scrape_article(url):
     """
-    Downloads the page at `url` and extracts title, image, and body text.
-    Returns a dict ready to be saved. Raises ValueError / requests errors
-    on failure so the route can show a friendly message.
+    Download a web page and pull out the headline, main image, and
+    body paragraphs, while stripping out nav bars, scripts, ads, etc.
     """
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36"
         )
     }
     response = requests.get(url, headers=headers, timeout=10)
-    response.raise_for_status() 
-
+    response.raise_for_status()
     soup = BeautifulSoup(response.text, "lxml")
-
-for tag in soup(["script", "style", "nav", "header", "footer", "aside", "form", "iframe", "noscript"]):
-        tag.decompose()
-title = None
-og_title = soup.find("meta", property="og:title")
-if og_title and og_title.get("content"):
-    title = og_title["content"].strip()
-elif soup.find("h1"):
-    title = soup.find("h1").get_text(strip=True)
-elif soup.title:
-    title = soup.title.get_text(strip=True)
-else:
-    title = "Untitled Article"
-
-  image_url = None
+    og_title = soup.find("meta", property="og:title")
+    if og_title and og_title.get("content"):
+        title = og_title["content"]
+    elif soup.title:
+        title = soup.title.get_text(strip=True)
+    else:
+        title = "Untitled Article"
+    image = None
     og_image = soup.find("meta", property="og:image")
     if og_image and og_image.get("content"):
-        image_url = og_image["content"].strip()
-
- article_tag = soup.find("article")
-    paragraphs_source = article_tag if article_tag else soup
-
-    raw_paragraphs = paragraphs_source.find_all("p")
-
-body_paragraphs = [
-        p.get_text(strip=True) for p in raw_paragraphs if len(p.get_text(strip=True)) > 40
-    ]
-
-    if not body_paragraphs:
-        raise ValueError("Couldn't find readable article text on that page.")
-
+        image = og_image["content"]
+    for tag in soup(["script", "style", "nav", "header", "footer", "form", "aside", "noscript"]):
+        tag.decompose()
+    paragraphs = [p.get_text(strip=True) for p in soup.find_all("p")]
+    paragraphs = [p for p in paragraphs if len(p.split()) > 5]
+    body_text = "\n\n".join(paragraphs)
     return {
-        "id": uuid.uuid4().hex[:10],
+        "title": title.strip(),
+        "image": image,
+        "text": body_text,
         "url": url,
-        "title": title,
-        "image": image_url,
-        "paragraphs": body_paragraphs,
-        "saved_at": datetime.now().strftime("%b %d, %Y - %I:%M %p"),
     }
-
 @app.route("/")
 def dashboard():
-    """The main page: URL submission form + grid of saved articles."""
     articles = load_articles()
-    articles.reverse() 
+    articles.sort(key=lambda a: a["date_added"], reverse=True)
     return render_template("index.html", articles=articles)
-
-
-@app.route("/save", methods=["POST"])
-def save():
-    """Handles the form submission from the dashboard."""
+@app.route("/add", methods=["POST"])
+def add_article():
     url = request.form.get("url", "").strip()
-
-    if not url.startswith(("http://", "https://")):
-        flash("Please enter a valid URL starting with http:// or https://")
+    if not url:
+        flash("Please paste a URL first.")
         return redirect(url_for("dashboard"))
-
     try:
-        article = scrape_article(url)
+        scraped = scrape_article(url)
     except requests.exceptions.RequestException:
-        flash("Couldn't reach that URL. Double check it and try again.")
+        flash("Couldn't load that page. Check the URL and try again.")
         return redirect(url_for("dashboard"))
-    except ValueError as e:
-        flash(str(e))
+    if not scraped["text"]:
+        flash("Couldn't find readable article text on that page.")
         return redirect(url_for("dashboard"))
-
+    article = {
+        "id": uuid.uuid4().hex[:8],
+        "title": scraped["title"],
+        "image": scraped["image"],
+        "text": scraped["text"],
+        "url": scraped["url"],
+        "date_added": datetime.now().isoformat(),
+    }
     articles = load_articles()
     articles.append(article)
     save_articles(articles)
-
-    # Take the user straight to the clean reading view of what they just saved
     return redirect(url_for("read_article", article_id=article["id"]))
-
-
 @app.route("/read/<article_id>")
 def read_article(article_id):
-    """The distraction-free reader page for one saved article."""
     articles = load_articles()
     article = next((a for a in articles if a["id"] == article_id), None)
-
     if article is None:
         flash("Article not found.")
         return redirect(url_for("dashboard"))
-
     return render_template("reader.html", article=article)
-
-
-@app.route("/delete/<article_id>", methods=["POST"])
-def delete_article(article_id):
-    """Removes a saved article from the JSON file."""
-    articles = load_articles()
-    articles = [a for a in articles if a["id"] != article_id]
-    save_articles(articles)
-    return redirect(url_for("dashboard"))
-
-
 if __name__ == "__main__":
     app.run(debug=True)
