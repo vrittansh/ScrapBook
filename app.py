@@ -29,11 +29,6 @@ def save_articles(articles):
         json.dump(articles, f, indent=2, ensure_ascii=False)
 
 
-# ----------------------------------------------------------------------------
-# SCRAPING
-# This is the core of the app: fetch a page, strip out the junk, and pull
-# out just the headline, main image, and body paragraphs.
-# ----------------------------------------------------------------------------
 
 def scrape_article(url):
     """
@@ -48,22 +43,22 @@ def scrape_article(url):
         )
     }
     response = requests.get(url, headers=headers, timeout=10)
-    response.raise_for_status()  # raises an exception on 404 / 500 / etc.
+    response.raise_for_status() 
 
     soup = BeautifulSoup(response.text, "lxml")
 
-  for tag in soup(["script", "style", "nav", "header", "footer", "aside", "form", "iframe", "noscript"]):
+for tag in soup(["script", "style", "nav", "header", "footer", "aside", "form", "iframe", "noscript"]):
         tag.decompose()
-  title = None
-    og_title = soup.find("meta", property="og:title")
-    if og_title and og_title.get("content"):
-        title = og_title["content"].strip()
-    elif soup.find("h1"):
-        title = soup.find("h1").get_text(strip=True)
-    elif soup.title:
-        title = soup.title.get_text(strip=True)
-    else:
-        title = "Untitled Article"
+title = None
+og_title = soup.find("meta", property="og:title")
+if og_title and og_title.get("content"):
+    title = og_title["content"].strip()
+elif soup.find("h1"):
+    title = soup.find("h1").get_text(strip=True)
+elif soup.title:
+    title = soup.title.get_text(strip=True)
+else:
+    title = "Untitled Article"
 
   image_url = None
     og_image = soup.find("meta", property="og:image")
