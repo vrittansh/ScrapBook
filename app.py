@@ -1,43 +1,37 @@
-import os
+from flask import Flask, render_template, request, redirect, url_for
+try:
+    import requests
+except Exception as e:
+    raise ImportError("The 'requests' package is required. Install with: pip install requests") from e
+try:
+    from bs4 import BeautifulSoup
+except Exception as e:
+    raise ImportError("The 'beautifulsoup4' package is required. Install with: pip install beautifulsoup4") from e
 import json
+import os
 import uuid
 from datetime import datetime
-
-from flask import Flask, render_template, request, redirect, url_for, flash
-import requests
-from bs4 import BeautifulSoup
-
 app = Flask(__name__)
-app.secret_key = "dev-secret-key"  
-DATA_FILE = os.path.join("data", "articles.json")
+DATA_FILE = os.path.join(os.path.dirname(__file__), "articles.json")
 def load_articles():
-    """Read all saved articles from our JSON 'database' file."""
     if not os.path.exists(DATA_FILE):
-        return []
+        return {}
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 def save_articles(articles):
-    """Write the full articles list back to disk."""
-    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(articles, f, indent=2, ensure_ascii=False)
 def scrape_article(url):
-    """
-    Download a web page and pull out the headline, main image, and
-    body paragraphs, while stripping out nav bars, scripts, ads, etc.
-    """
     headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36"
-        )
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     response = requests.get(url, headers=headers, timeout=10)
     response.raise_for_status()
-    soup = BeautifulSoup(response.text, "lxml")
-    og_title = soup.find("meta", property="og:title")
-    if og_title and og_title.get("content"):
-        title = og_title["content"]
+    soup = BeautifulSoup(response.text, "html.parser")
+    for tag in soup(["script", "style", "nav", "header", "footer", "aside", "form", "iframe", "noscript"]):
+        tag.decompose()
+    if soup.find("h1"):
+        title = soup.find("h1").get_text(strip=True)
     elif soup.title:
         title = soup.title.get_text(strip=True)
     else:
@@ -46,55 +40,46 @@ def scrape_article(url):
     og_image = soup.find("meta", property="og:image")
     if og_image and og_image.get("content"):
         image = og_image["content"]
-    for tag in soup(["script", "style", "nav", "header", "footer", "form", "aside", "noscript"]):
-        tag.decompose()
-    paragraphs = [p.get_text(strip=True) for p in soup.find_all("p")]
-    paragraphs = [p for p in paragraphs if len(p.split()) > 5]
+    container = soup.find("article") or soup.find("body")
+    paragraphs = []
+    if container:
+        for p in container.find_all("p"):
+            text = p.get_text(strip=True)
+            if len(text) > 40:
+                paragraphs.append(text)
     body_text = "\n\n".join(paragraphs)
     return {
-        "title": title.strip(),
+        "title": title,
+        "url": url,
         "image": image,
         "text": body_text,
-        "url": url,
+        "date_saved": datetime.now().strftime("%Y-%m-%d %H:%M")
     }
 @app.route("/")
 def dashboard():
     articles = load_articles()
-    articles.sort(key=lambda a: a["date_added"], reverse=True)
-    return render_template("index.html", articles=articles)
-@app.route("/add", methods=["POST"])
-def add_article():
+    sorted_articles = sorted(articles.items(), key=lambda x: x[1]["date_saved"], reverse=True)
+    return render_template("index.html", articles=sorted_articles)
+@app.route("/save", methods=["POST"])
+def save():
     url = request.form.get("url", "").strip()
     if not url:
-        flash("Please paste a URL first.")
         return redirect(url_for("dashboard"))
     try:
-        scraped = scrape_article(url)
-    except requests.exceptions.RequestException:
-        flash("Couldn't load that page. Check the URL and try again.")
-        return redirect(url_for("dashboard"))
-    if not scraped["text"]:
-        flash("Couldn't find readable article text on that page.")
-        return redirect(url_for("dashboard"))
-    article = {
-        "id": uuid.uuid4().hex[:8],
-        "title": scraped["title"],
-        "image": scraped["image"],
-        "text": scraped["text"],
-        "url": scraped["url"],
-        "date_added": datetime.now().isoformat(),
-    }
+        article_data = scrape_article(url)
+    except Exception as e:
+        return f"Something went wrong while scraping that URL: {e}", 400
     articles = load_articles()
-    articles.append(article)
+    article_id = str(uuid.uuid4())[:8]
+    articles[article_id] = article_data
     save_articles(articles)
-    return redirect(url_for("read_article", article_id=article["id"]))
+    return redirect(url_for("dashboard"))
 @app.route("/read/<article_id>")
-def read_article(article_id):
+def read(article_id):
     articles = load_articles()
-    article = next((a for a in articles if a["id"] == article_id), None)
-    if article is None:
-        flash("Article not found.")
-        return redirect(url_for("dashboard"))
+    article = articles.get(article_id)
+    if not article:
+        return "Article not found", 404
     return render_template("reader.html", article=article)
 if __name__ == "__main__":
     app.run(debug=True)

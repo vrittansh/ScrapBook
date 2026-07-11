@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Read Later Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="topbar">
+        <h1>ScrapBook</h1>
+        <button id="theme-toggle" class="theme-toggle">Dark</button>
+    </div>
+    <main class="container">
+        <form action="{{ url_for('save') }}" method="POST" class="url-form">
+            <input type="url" name="url" placeholder="Paste an article URL..." required>
+            <button type="submit">Save Article</button>
+        </form>
+        <div class="article-grid">
+            {% if articles %}
+                {% for article_id, article in articles %}
+                <a href="{{ url_for('read', article_id=article_id) }}" class="article-card">
+                    {% if article.image %}
+                        <img src="{{ article.image }}" alt="">
+                    {% else %}
+                        <div class="no-image">No image</div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h2>{{ article.title }}</h2>
+                        <p class="meta">Saved {{ article.date_saved }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <p class="empty-state">No articles saved yet. Paste a URL above to get started.</p>
+            {% endif %}
+        </div>
+    </main>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

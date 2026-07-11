@@ -1,19 +1,29 @@
-{% extends "base.html" %}
-{% block title %}{{ article.title }}{% endblock %}
-
-{% block content %}
-<article class="reader">
-    <h1>{{ article.title }}</h1>
-    <p class="source-link"><a href="{{ article.url }}" target="_blank">View original ↗</a></p>
-
-    {% if article.image %}
-    <img class="reader-image" src="{{ article.image }}" alt="">
-    {% endif %}
-
-    <div class="reader-body">
-    {% for paragraph in article.text.split('\n\n') %}
-        <p>{{ paragraph }}</p>
-    {% endfor %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ article.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="topbar">
+        <a href="{{ url_for('dashboard') }}" class="back-link">← Back</a>
+        <button id="theme-toggle" class="theme-toggle">Dark</button>
     </div>
-</article>
-{% endblock %}
+    <article class="reader">
+        <h1>{{ article.title }}</h1>
+        <p class="reader-meta">
+            <a href="{{ article.url }}" target="_blank">Original article</a> · Saved {{ article.date_saved }}
+        </p>
+        {% if article.image %}
+            <img src="{{ article.image }}" alt="" class="reader-image">
+        {% endif %}
+        <div class="reader-text">
+            {% for paragraph in article.text.split('\n\n') %}
+                <p>{{ paragraph }}</p>
+            {% endfor %}
+        </div>
+    </article>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
