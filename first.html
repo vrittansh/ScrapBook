@@ -31,6 +31,29 @@
     <div class="card">
     {% if article.image %}
     <img src="{{ article.image }}" alt="" class="card-image" onerror="this.style.display='none'">
-    
+    {% endif %}
+    <div class="card-body">
+    <h2><a href="{{ url_for('read_article', article_id=article.id) }}">{{ article.title }}</a></h2>
+    <p class="card-meta">Saved {{ article.saved_at }}</p>
+    <form action="{{ url_for('delete_article', article_id=article.id) }}" method="POST">
+        <button type="submit" class="delete-btn">Remove</button>
+    </form>
+    </div>
+    </div>
+    {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">No articles saved yet. Paste a URL above to get started.</p>
+    {% endif %}
+</main>
+<script>
+    function toggleTheme() {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark');
+    }
+</script>
 </body>
 </html>
