@@ -20,26 +20,26 @@ body {
     background: var(--bg);
     color: var(--text);
     font-family: Georgia, 'Times New Roman', serif;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: background 0.2s ease, color 2s ease; 
 }
 .topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
-    border-bottom: 1px solid var(--border);
+    padding: 1rem;
+    border-bottom: 2px solid var(--border);
 }
-.topbar h1 { font-size: 1.3rem; margin: 0; }
+.topbar h1 { font-size: 3rem; margin: 0; }
 .theme-toggle {
-    background: none;
+    background: none; 
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 0.4rem 0.7rem;
-    cursor: pointer;
-    font-size: 1rem;
+    border-radius: 10px;
+    padding: 0.3rem 0.3rem;
+    cursor: pointer; 
+    font-size: 0.8rem;
     color: var(--text);
 }
-.container { max-width: 900px; margin: 0 auto; padding: 3rem;  }
+.container { max-width: 1000px;margin: auto; padding: 5rem;  }
 .url-form { display: flex; gap: 0.5rem; margin-bottom: 2rem; } 
 .url-form input {
     flex: 1;
@@ -67,7 +67,7 @@ body {
 .article-grid h1 { grid-column: 1 / -1; text-align: center; color: var(--muted); text-align: center; margin-top: 15rem ;font-size: 1.5rem; }
 .article-card {
     background: var(--card-bg);
-    border: 1px solid var(--border);
+    border: 3px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
     text-decoration: none;
@@ -84,11 +84,11 @@ body {
     align-items: center;
     justify-content: center;
     color: var(--muted);
-    font-size: 0.9rem;
-}
-.card-body { padding: 0.9rem; }
-.card-body h2 { font-size: 1.05rem; margin: 0 0 0.4rem; line-height: 1.4; }
-.meta, .reader-meta { color: var(--muted); font-size: 0.85rem; }
+    font-size: 1rem;
+} 
+.card-body { padding: 0.5rem; }
+.card-body h2 { font-size: 1.5rem; margin: auto; line-height: 1; }
+.meta, .reader-meta { color: var(--muted); font-size: 1rem; padding: 3rem 0rem 0rem 0rem; }
 .reader { max-width: 700px; margin: 0 auto; padding: 2rem; }
 .reader h1 { font-size: 2rem; line-height: 1.3; margin-bottom: 0.5rem; }
 .reader-image { width: 100%; border-radius: 8px; margin: 1.5rem 0; }
