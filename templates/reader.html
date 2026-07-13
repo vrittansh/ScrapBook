@@ -7,13 +7,14 @@
 </head>
 <body>
     <div class="topbar">
-        <a href="{{ url_for('dashboard') }}" class="back-link">← Back</a>
+        <a href="{{ url_for('dashboard') }}" class="back-link">⇐</a>
         <button id="theme-toggle" class="theme-toggle">Dark</button>
     </div>
     <article class="reader">
         <h1>{{ article.title }}</h1>
+        <p class="reader-time"> Saved || {{ article.date_saved }}</p>
         <p class="reader-meta">
-            <a href="{{ article.url }}" target="_blank">Original article</a> · Saved {{ article.date_saved }}
+            <a href="{{ article.url }}" target="_blank">Original article</a>
         </p>
         {% if article.image %}
             <img src="{{ article.image }}" alt="" class="reader-image">

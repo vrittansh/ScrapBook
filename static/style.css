@@ -39,7 +39,7 @@ body {
     font-size: 0.8rem;
     color: var(--text);
 }
-.container { max-width: 1000px;margin: auto; padding: 5rem;  }
+.container { max-width: 2000px;margin: 5rem auto; padding: 0rem 10rem 0rem 10rem;  }
 .url-form { display: flex; gap: 0.5rem; margin-bottom: 2rem; } 
 .url-form input {
     flex: 1;
@@ -62,9 +62,11 @@ body {
 .article-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    padding: 3rem 0rem 0rem 0rem;
     gap: 1.5rem;
+    align-items: stretch;
 }
-.article-grid h1 { grid-column: 1 / -1; text-align: center; color: var(--muted); text-align: center; margin-top: 15rem ;font-size: 1.5rem; }
+.article-grid h1 { grid-column: 1 / -1; text-align: center; color: var(--muted); text-align: center; margin-top: 15rem ;font-size: 1.5rem; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; }
 .article-card {
     background: var(--card-bg);
     border: 3px solid var(--border);
@@ -74,6 +76,7 @@ body {
     color: var(--text);
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 .article-card img { width: 100%; height: 140px; object-fit: cover; }
 .no-image {
@@ -86,11 +89,15 @@ body {
     color: var(--muted);
     font-size: 1rem;
 } 
-.card-body { padding: 0.5rem; }
-.card-body h2 { font-size: 1.5rem; margin: auto; line-height: 1; }
-.meta, .reader-meta { color: var(--muted); font-size: 1rem; padding: 3rem 0rem 0rem 0rem; }
-.reader { max-width: 700px; margin: 0 auto; padding: 2rem; }
-.reader h1 { font-size: 2rem; line-height: 1.3; margin-bottom: 0.5rem; }
+.card-body { padding: 1rem;display:flex;flex-direction:column;flex: 1;align-items: flex-start; }
+.card-body h2 { font-size: 1.5rem; margin: 0 0 auto 0; line-height: 1; } 
+.meta { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--muted); font-size: 0.7rem;margin-top: 2rem ;margin-bottom: -0.5rem; }
+.reader-meta {margin:5rem 5rem 3rem 0; ;font-family:Arial, Helvetica, sans-serif}
+.reader-time { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--muted); font-size: 0.7rem;text-align: right }
+.reader { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+.reader h1 { font-size: 5rem; line-height: 1; margin-bottom: 0.5rem; }
 .reader-image { width: 100%; border-radius: 8px; margin: 1.5rem 0; }
-.reader-text p { font-size: 1.15rem; line-height: 1.8; margin-bottom: 1.3rem; }
-.back-link { color: var(--text); text-decoration: none; }
+.reader-text p { font-size: 1.5rem; line-height: 1.5; margin-bottom: 1.3rem;font-family:Georgia, 'Times New Roman', Times, serif }
+.back-link { color: var(--text);font-size: 3rem ;text-decoration: none; }

@@ -53,7 +53,7 @@ def scrape_article(url):
         "url": url,
         "image": image,
         "text": body_text,
-        "date_saved": datetime.now().strftime("%Y-%m-%d %H:%M")
+        "date_saved": datetime.now().strftime("%Y-%m-%d || %H:%M")
     }
 @app.route("/")
 def dashboard():
