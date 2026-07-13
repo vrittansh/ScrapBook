@@ -12,7 +12,10 @@ import os
 import uuid
 from datetime import datetime
 app = Flask(__name__)
-DATA_FILE = os.path.join(os.path.dirname(__file__), "articles.json")
+if os.environ.get("VERCEL"):
+    DATA_FILE = "/tmp/articles.json"
+else:
+    DATA_FILE = os.path.join(os.path.dirname(__file__), "articles.json")
 def load_articles():
     if not os.path.exists(DATA_FILE):
         return {}
