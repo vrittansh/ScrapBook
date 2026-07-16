@@ -1,6 +1,5 @@
-# PocketBack
+# ScrapBook — Read Later Dashboard
 
-# 📚 ScrapBook — Read Later Dashboard
 
 > No ads. No pop-ups. Just a quiet corner of the web to read your articles.
 
