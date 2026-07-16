@@ -24,7 +24,6 @@ ScrapBook is a minimalist "read later" web app. Paste in the URL of any article 
 |------------|--------------------------------------|
 | Backend    | Python, Flask                       |
 | Scraping   | BeautifulSoup4, Requests            |
-| Storage    | Upstash Redis (serverless key-value store) |
 | Frontend   | HTML, vanilla CSS, vanilla JavaScript |
 | Hosting    | Vercel                              |
 
@@ -92,7 +91,7 @@ To deploy your own copy:
 1. Push this repo to your own GitHub account
 2. Import it into Vercel ([New Project → Import Git Repository](https://vercel.com/new))
 3. Add an Upstash Redis database via the project's **Storage** tab
-4. Deploy 🎉
+4. Deploy
 
 ## Known Limitations
 
